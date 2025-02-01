@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 import folium
 
 # Load environmental data and historical wildfire data
@@ -16,6 +16,7 @@ data['fire_occurred'] = data['severity'].notnull().astype(int)
 # Fill missing values
 data = data.fillna(0)
 
+data.to_csv("merged_data.csv")
 # Feature selection
 features = ['temperature', 'humidity', 'wind_speed', 'precipitation', 'vegetation_index', 'human_activity_index']
 X = data[features]
@@ -30,7 +31,11 @@ clf.fit(X_train, y_train)
 
 # Predict on the test set
 y_pred = clf.predict(X_test)
-print(classification_report(y_test, y_pred))
+
+print(classification_report(y_test, y_pred, zero_division=0))
+print(confusion_matrix(y_test, y_pred))
+
+print("Accuracy:", accuracy_score(y_test, y_pred))
 
 # Predict fire occurrences for future environmental data
 def predict_fire_occurrences(future_environmental_data_file):
@@ -45,7 +50,7 @@ def predict_fire_occurrences(future_environmental_data_file):
     if not fire_risk_data.empty:
         print(fire_risk_data[['timestamp', 'temperature', 'humidity', 'wind_speed', 'precipitation', 'vegetation_index', 'human_activity_index', 'latitude', 'longitude', 'fire_risk']])
     
-    # Generate a heatmap or interactive map
+    # Generate a heatmap or finteractive map
     fire_map = folium.Map(location=[46.8139, -71.2082], zoom_start=6)
     for idx, row in future_env_data.iterrows():
         if row['fire_risk'] == 1:
@@ -60,3 +65,5 @@ def predict_fire_occurrences(future_environmental_data_file):
 # Example usage
 future_environmental_data_file = 'future_environmental_data.csv'
 predict_fire_occurrences(future_environmental_data_file)
+
+print("HI")
