@@ -1,6 +1,9 @@
 import pandas as pd
 from datetime import datetime, timedelta
 
+# ---------------------------
+# Resource Definitions
+# ---------------------------
 resources = {
     "Smoke Jumpers": {
         "deploy_time": timedelta(minutes=30),

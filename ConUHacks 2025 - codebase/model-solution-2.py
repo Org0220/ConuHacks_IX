@@ -49,21 +49,10 @@ def predict_fire_occurrences(future_environmental_data_file):
     # Print predicted fire risk data to the console
     if not fire_risk_data.empty:
         print(fire_risk_data[['timestamp', 'temperature', 'humidity', 'wind_speed', 'precipitation', 'vegetation_index', 'human_activity_index', 'latitude', 'longitude', 'fire_risk']])
-    
-    # Generate a heatmap or finteractive map
-    fire_map = folium.Map(location=[46.8139, -71.2082], zoom_start=6)
-    for idx, row in future_env_data.iterrows():
-        if row['fire_risk'] == 1:
-            folium.CircleMarker(
-                location=[row['latitude'], row['longitude']],
-                radius=5,
-                fill=True,
-                color='red'
-            ).add_to(fire_map)
-    fire_map.save('fire_risk_map.html')
+
+
 
 # Example usage
 future_environmental_data_file = 'future_environmental_data.csv'
 predict_fire_occurrences(future_environmental_data_file)
 
-print("HI")
