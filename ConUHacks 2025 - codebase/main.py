@@ -1,6 +1,7 @@
 import pandas as pd
 from datetime import datetime, timedelta
 
+# Define firefighting resources
 resources = {
     "Smoke Jumpers": {
         "deploy_time": timedelta(minutes=30),
@@ -41,60 +42,40 @@ severity_rank = {
     "low": 2
 }
 
+# Load wildfire data
+fire_data = pd.read_csv("current_wildfiredata.csv")
+fire_data['fire_start_time'] = pd.to_datetime(fire_data['fire_start_time'])
+fire_data.sort_values(by=['fire_start_time', 'severity'], key=lambda x: x.map(severity_rank), inplace=True)
 
-def main():
-    try:
-        df = pd.read_csv("current_wildfiredata.csv")
-    except Exception as e:
-        print("Error loading CSV file:", e)
-        return
+def assign_fire_unit(fire):
+    fire_end_time = fire['fire_start_time']
+    # Change these to change the amount of time units are unavailable
+    if fire['severity'] == "high":
+        fire_duration = timedelta(days=365)  # 2 months or 180 days
+    elif fire['severity'] == "medium":
+        fire_duration = timedelta(days=365)  # 1 month or 90 days
+    else:
+        fire_duration = timedelta(days=365)  # 7 days or 30 days
+    
+    for unit_type, unit_info in sorted(resources.items(), key=lambda x: x[1]['deploy_time']):
+        for i in range(len(unit_info['units'])):
+            if unit_info['units'][i] <= fire['fire_start_time']:
+                unit_info['units'][i] = fire['fire_start_time'] + fire_duration
+                return unit_type, unit_info['cost']
+    
+    return None, damage_costs[fire['severity']]
 
-    df['fire_start_time'] = pd.to_datetime(df['fire_start_time'])
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
+fire_data['assigned_unit'] = None
+fire_data['cost'] = 0
 
-    df['severity_rank'] = df['severity'].str.lower().map(severity_rank)
-    df.sort_values(by=["fire_start_time", "severity_rank"], inplace=True)
+for index, fire in fire_data.iterrows():
+    unit, cost = assign_fire_unit(fire)
+    fire_data.at[index, 'assigned_unit'] = unit
+    fire_data.at[index, 'cost'] = cost
 
-    addressed_counts = {"low": 0, "medium": 0, "high": 0}
-    missed_counts = {"low": 0, "medium": 0, "high": 0}
-    total_operational_cost = 0
-    total_damage_cost = 0
+# Sort final dataset by timestamp
+fire_data.sort_values(by='fire_start_time', inplace=True)
 
-    for index, row in df.iterrows():
-        event_time = row['fire_start_time']
-        severity = row['severity'].lower()
-
-        available_options = []
-        for res_name, res_info in resources.items():
-            for unit_idx, available_time in enumerate(res_info["units"]):
-                if event_time >= available_time:
-                    available_options.append((res_name, unit_idx, res_info["cost"], res_info["deploy_time"]))
-
-        if available_options:
-            chosen_resource = min(available_options, key=lambda x: x[2])
-            res_name, unit_idx, cost, deploy_time = chosen_resource
-
-            resources[res_name]["units"][unit_idx] = event_time + deploy_time
-            total_operational_cost += cost
-            addressed_counts[severity] += 1
-        else:
-            missed_counts[severity] += 1
-            total_damage_cost += damage_costs[severity]
-
-    total_addressed = sum(addressed_counts.values())
-    total_missed = sum(missed_counts.values())
-    severity_report = {
-        "low": addressed_counts["low"] + missed_counts["low"],
-        "medium": addressed_counts["medium"] + missed_counts["medium"],
-        "high": addressed_counts["high"] + missed_counts["high"]
-    }
-
-    print("Number of fires addressed:", total_addressed)
-    print("Number of fires delayed:", total_missed)
-    print("Total operational costs: $", total_operational_cost)
-    print("Estimated damage costs from delayed responses: $", total_damage_cost)
-    print("Fire severity report:", severity_report)
-
-
-if __name__ == "__main__":
-    main()
+# Save results
+fire_data.to_csv("assigned_firefighting_units.csv", index=False)
+print("Assignment completed and saved to assigned_firefighting_units.csv")
