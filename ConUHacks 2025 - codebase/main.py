@@ -43,7 +43,7 @@ severity_rank = {
 }
 
 # Load wildfire data
-fire_data = pd.read_csv("current_wildfiredata.csv")
+fire_data = pd.read_csv("data/current_wildfiredata.csv")
 fire_data['fire_start_time'] = pd.to_datetime(fire_data['fire_start_time'])
 fire_data.sort_values(by=['fire_start_time', 'severity'], key=lambda x: x.map(severity_rank), inplace=True)
 
@@ -77,5 +77,5 @@ for index, fire in fire_data.iterrows():
 fire_data.sort_values(by='fire_start_time', inplace=True)
 
 # Save results
-fire_data.to_csv("assigned_firefighting_units.csv", index=False)
+fire_data.to_csv("data/assigned_firefighting_units.csv", index=False)
 print("Assignment completed and saved to assigned_firefighting_units.csv")

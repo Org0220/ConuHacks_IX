@@ -84,8 +84,8 @@ def generate_all_data():
     # Generate historical environmental data and wildfire data for 2020-2023
     start_date = datetime.datetime(2020, 1, 1)
     end_date = datetime.datetime(2023, 12, 31)
-    generate_environmental_data(start_date, end_date, 'historical_environmental_data.csv')
-    generate_wildfire_data('historical_environmental_data.csv', 'historical_wildfiredata.csv', 2020, 2023)
+    generate_environmental_data(start_date, end_date, 'data/historical_environmental_data.csv')
+    generate_wildfire_data('data/historical_environmental_data.csv', 'data/historical_wildfiredata.csv', 2020, 2023)
     
     # Generate current environmental data and wildfire data for 2024
     start_date = datetime.datetime(2024, 1, 1)
@@ -96,7 +96,7 @@ def generate_all_data():
     # Generate future environmental data for 2025
     start_date = datetime.datetime(2025, 1, 1)
     end_date = datetime.datetime(2025, 12, 31)
-    generate_environmental_data(start_date, end_date, 'future_environmental_data.csv')
+    generate_environmental_data(start_date, end_date, 'data/future_environmental_data.csv')
 
 # Generate the data
 generate_all_data()
